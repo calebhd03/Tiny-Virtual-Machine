@@ -15,6 +15,7 @@ struct IR
 	int ADDR;
 };
 
+FILE *fpW;
 struct IR IR;
 int IM[IMSIZE];
 int DM[DMSIZE];
@@ -31,7 +32,7 @@ void Fetch()
 
 void Load()
 {
-	printf("Load <%d>\n", IR.ADDR);
+	fprintf(fpW, "Load <%d>\n", IR.ADDR);
 	int MAR = IR.ADDR;
 	int MDR = DM[MAR];
 	AC = MDR;
@@ -39,7 +40,7 @@ void Load()
 
 void Add()
 {
-	printf("Add <%d>\n", IR.ADDR);
+	fprintf(fpW, "Add <%d>\n", IR.ADDR);
 	int MAR = IR.ADDR;
 	int MDR = DM[MAR];
 	AC += MDR;
@@ -47,7 +48,7 @@ void Add()
 
 void Store()
 {
-	printf("Store <%d>\n", IR.ADDR);
+	fprintf(fpW, "Store <%d>\n", IR.ADDR);
 	int MAR = IR.ADDR;
 	int MDR = AC;
 	DM[MAR] = MDR;
@@ -55,7 +56,7 @@ void Store()
 
 void Sub()
 {
-	printf("Subt <%d>\n", IR.ADDR);
+	fprintf(fpW, "Subt <%d>\n", IR.ADDR);
 	int MAR = IR.ADDR;
 	int MDR = DM[MAR];
 	AC -= MDR;
@@ -63,25 +64,27 @@ void Sub()
 
 void In()
 {
-	printf("In <%d>\n", IR.ADDR);
+	fprintf(fpW, "In <%d>\n", IR.ADDR);
+	printf("Input keyboard: ");
 	scanf("%d", &AC);
+	fprintf(fpW, "Input keyboard: %d\n", AC);
 }
 
 void Out()
 {
-	printf("Out <%d>\n", IR.ADDR);
-	printf("%d\n", AC);
+	fprintf(fpW, "Out <%d>\n", IR.ADDR);
+	fprintf(fpW, "result is %d\n", AC);
 }
 
 int Halt()
 {
-	printf("\nend of program\n");
 	return 0;
 }
 
 void JMP()
 {
-	PC += 2;
+	printf("jumping to %d * 2", IR.ADDR);
+	PC = IR.ADDR * 2;
 }
 
 void SkipZ()
@@ -110,70 +113,82 @@ void SkipL()
 
 void PrintValues()
 {
-	printf("\nPC = %d | A = %d | DM = [%d", PC, AC, DM[0]);
+	fprintf(fpW, "\nPC = %d | A = %d | DM = [%d", PC, AC, DM[0]);
 	//prints DM
 	for(int i=1; i < DMSIZE; i++)
 	{
-		printf(", %d", DM[i]);
+		fprintf(fpW, ", %d", DM[i]);
 	}
-	printf("]\n");
+	fprintf(fpW, "]\n");
 }
 
 void InputIM()
 {
-	FILE *fp;
-	fp = fopen("elf.txt", "r");
+	printf("Input file name: ");
+	char fileName[128];
+	scanf("%s", fileName);
 
+
+	FILE *fp;
+	fp = fopen(fileName, "r");
+
+	fprintf(fpW, "Starting compile: %s\n", fileName);
 	char buff[255];
 	int IMCounter = 0;
+	int op = 0;
+	int addr = 0;
+	fscanf(fp, "%d", &op);
+	fscanf(fp, "%d", &addr);
+	fgets(buff, 255, fp);
 
-
-	fgets(buff, 255, (FILE*)fp);
+	//fgets(buff, 255, (FILE*)fp);
 
 	while(feof(fp) ==0)
 	{
-		printf("%s", buff);
-		IM[IMCounter] = buff[0] - '0';
-		IM[IMCounter + 1] = buff[2] - '0';
+
+		IM[IMCounter] = op;
+		IM[IMCounter + 1] = addr;
 
 		IMCounter += 2;
+		fscanf(fp, "%d", &op);
+		fscanf(fp, "%d", &addr);
 		fgets(buff, 255, (FILE*)fp);
 
 	}
-	printf("%s\n", buff);
-	IM[IMCounter] = buff[0] - '0';
-	IM[IMCounter + 1] = buff[2] - '0';
-
-	IMCounter += 2;
-	fgets(buff, 255, (FILE*)fp);
-
+	IM[IMCounter] = op;
+	IM[IMCounter + 1] = addr;
 
 	fclose(fp);
+
+
+
+	fprintf(fpW, "Done Compiling \n");
 }
 
 void PrintIM()
 {
 
-	printf("IM = [%d", IM[0]);
+	fprintf(fpW, "IM = [%d", IM[0]);
 	//prints DM
 	for(int i=1; i < IMSIZE; i++)
 	{
-		printf(", %d", IM[i]);
+		fprintf(fpW, ", %d", IM[i]);
 	}
-	printf("]\n");
+	fprintf(fpW, "]\n");
 }
 
 int main()
 {
-	printf("hello\n");
+	char outputFileName[128] = "CalebDetersOutputFIle.txt";
+	fpW= fopen(outputFileName, "w");
+
+	printf("Outputting to: %s\n", outputFileName);
 
 	InputIM();
-	printf("Done Inputing \n");
-
 	PrintIM();
-
+	int loop = 1;
 	//run program
-	while(1)
+	while(loop)
 	{
 		PrintValues();
 		Fetch();
@@ -199,7 +214,7 @@ int main()
 			Out();
 			break;
 		case 7:
-			return Halt(); //ends the program here
+			loop = Halt(); //ends the program here
 			break;
 		case 8:
 			JMP();
@@ -214,10 +229,12 @@ int main()
 			SkipL();
 			break;
 		default:
-			printf("!!!! WRONG INPUT !!!!");
+			fprintf(fpW, "!!!! WRONG INPUT !!!!");
 			break;
 		}
 	}
 
+	fprintf(fpW, "\nEnd of program\n");
+	fclose(fpW);
 	return 0;
 }
