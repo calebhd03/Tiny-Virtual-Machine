@@ -1,8 +1,7 @@
 /*
  * tinyarch.c
  *
- *  Created on: Jul 17, 2023
- *      Author: calebdeters
+ * Author: Caleb Deters
  */
 
 #include <stdio.h>
@@ -75,22 +74,25 @@ void In()
 void Out()
 {
 	fprintf(fpW, "Out <%d>\n", IR.ADDR);
-	fprintf(fpW, "result is %d\n", AC);
-	printf("result is %d\n", AC);
+	fprintf(fpW, "Result is %d\n", AC);
+	printf("Result is %d\n", AC);
 }
 //ends the program
 int Halt()
 {
+	fprintf(fpW, "Halt <%d>\n", IR.ADDR);
 	return 0;
 }
 //jump to PC <ADDR>
 void JMP()
 {
+	fprintf(fpW, "JMP <%d>\n", IR.ADDR);
 	PC = IR.ADDR * 2;
 }
 //if AC == 0 skip next line
 void SkipZ()
 {
+	fprintf(fpW, "SkipZ <%d>\n", IR.ADDR);
 	if(AC == 0)
 	{
 		PC += 2;
@@ -99,6 +101,7 @@ void SkipZ()
 //if AC > 0 skip next line
 void SkipG()
 {
+	fprintf(fpW, "SkipG <%d>\n", IR.ADDR);
 	if(AC>0)
 	{
 		PC += 2;
@@ -107,13 +110,14 @@ void SkipG()
 //if AC < 0 skip next line
 void SkipL()
 {
+	fprintf(fpW, "SkipL <%d>\n", IR.ADDR);
 	if(AC<0)
 	{
 		PC += 2;
 	}
 }
 //prints the current machines values
-void PrintValues()
+void PrintMachineValues()
 {
 	fprintf(fpW, "\nPC = %d | A = %d | DM = [%d", PC, AC, DM[0]);
 	//prints DM
@@ -126,43 +130,46 @@ void PrintValues()
 //converts the elf to instructions
 void InputIM()
 {
+	//get file name
 	printf("Input file name: ");
 	char fileName[128];
 	scanf("%s", fileName);
 
-
+	//open input file
 	FILE *fp;
 	fp = fopen(fileName, "r");
 
 	fprintf(fpW, "Starting compile: %s\n", fileName);
+
+	//temp holding variables
 	char buff[255];
 	int IMCounter = 0;
 	int op = 0;
 	int addr = 0;
-	fscanf(fp, "%d", &op);
-	fscanf(fp, "%d", &addr);
-	fgets(buff, 255, fp);
 
-	//fgets(buff, 255, (FILE*)fp);
+	fscanf(fp, "%d", &op); //gets OP code
+	fscanf(fp, "%d", &addr); //gets ADDR
+	fgets(buff, 255, (FILE*)fp); //Moves to next line
 
-	while(feof(fp) ==0)
+
+	while(feof(fp) ==0) //While not end of file
 	{
 
 		IM[IMCounter] = op;
 		IM[IMCounter + 1] = addr;
 
 		IMCounter += 2;
-		fscanf(fp, "%d", &op);
-		fscanf(fp, "%d", &addr);
-		fgets(buff, 255, (FILE*)fp);
+
+		fscanf(fp, "%d", &op); //gets OP code
+		fscanf(fp, "%d", &addr); //gets ADDR
+		fgets(buff, 255, (FILE*)fp); //Moves to next line
 
 	}
+
 	IM[IMCounter] = op;
 	IM[IMCounter + 1] = addr;
 
 	fclose(fp);
-
-
 
 	fprintf(fpW, "Done Compiling \n");
 }
@@ -189,13 +196,16 @@ int main()
 	InputIM();
 	PrintIM();
 
-	//run program
+	//loop through IM
 	int loop = 1;
 	while(loop)
 	{
-		PrintValues();
+		PrintMachineValues();
+
+		//fetch new IR
 		Fetch();
 
+		//proccess OP code
 		switch(IR.OP)
 		{
 		case 1:
@@ -217,7 +227,7 @@ int main()
 			Out();
 			break;
 		case 7:
-			loop = Halt(); //ends the program here
+			loop = Halt(); //breaks the loop
 			break;
 		case 8:
 			JMP();
@@ -232,12 +242,13 @@ int main()
 			SkipL();
 			break;
 		default:
-			fprintf(fpW, "!!!! WRONG INPUT !!!!");
+			fprintf(fpW, "!!!! Inserted OP Code %d not supported !!!!", IR.OP);
 			break;
 		}
 	}
 
 	fprintf(fpW, "\nEnd of program\n");
 	fclose(fpW);
+
 	return 0;
 }
