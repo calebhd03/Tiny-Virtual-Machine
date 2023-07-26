@@ -1,12 +1,18 @@
-5 5 //IN x
-6 7 //OUT x
-3 0 //STORE x
-5 5 //IN y
-6 7 //OUT y
-3 1 //STORE y
 5 5 //IN 1 //Make this 1 as it is for a constant
 6 7 //OUT 1
 3 2 //STORE 1
+10 0 //SKIPL AC>0
+7 0 //END
+5 5 //IN x
+6 7 //OUT x
+3 0 //STORE x
+10 0 //SKIPL AC>0
+7 0 //END
+5 5 //IN y
+6 7 //OUT y
+3 1 //STORE y
+10 0 //SKIPL AC>0
+7 0 //END
 1 3 //LOAD result  //loop,
 2 0 //ADD x
 3 3 //STORE result
@@ -14,7 +20,7 @@
 4 2 //SUBT 1
 3 1 //STORE y
 9 0 //SKIPZ
-8 9 //JUMP Line 10 after index
+8 15 //JUMP Line 10 after index
 1 3 //LOAD result
 6 7 //OUT result
 7 0 //END

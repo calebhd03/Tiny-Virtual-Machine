@@ -9,19 +9,21 @@
 #define IMSIZE 129
 #define DMSIZE 10
 
+//Instuction Register
 struct IR
 {
 	int OP;
 	int ADDR;
 };
 
-FILE *fpW;
-struct IR IR;
-int IM[IMSIZE];
-int DM[DMSIZE];
-int PC = 0;
-int AC = 0;
+FILE *fpW; //file to write to
+struct IR IR; //instuction Register
+int IM[IMSIZE]; //instruction memory
+int DM[DMSIZE];	//data memory
+int PC = 0;	//program counter
+int AC = 0; //accumulator
 
+//puts next instruction in IR
 void Fetch()
 {
 	int MAR1 = PC;
@@ -29,7 +31,7 @@ void Fetch()
 	IR.OP = IM[MAR1];
 	IR.ADDR = IM[MAR1+1];
 }
-
+// AC = DM[ADDR]
 void Load()
 {
 	fprintf(fpW, "Load <%d>\n", IR.ADDR);
@@ -37,7 +39,7 @@ void Load()
 	int MDR = DM[MAR];
 	AC = MDR;
 }
-
+// AC += DM[ADDR]
 void Add()
 {
 	fprintf(fpW, "Add <%d>\n", IR.ADDR);
@@ -45,7 +47,7 @@ void Add()
 	int MDR = DM[MAR];
 	AC += MDR;
 }
-
+//store AC in DM[ADDR]
 void Store()
 {
 	fprintf(fpW, "Store <%d>\n", IR.ADDR);
@@ -53,7 +55,7 @@ void Store()
 	int MDR = AC;
 	DM[MAR] = MDR;
 }
-
+// AC -= DM[ADDR]
 void Sub()
 {
 	fprintf(fpW, "Subt <%d>\n", IR.ADDR);
@@ -61,7 +63,7 @@ void Sub()
 	int MDR = DM[MAR];
 	AC -= MDR;
 }
-
+//keyboard input to AC
 void In()
 {
 	fprintf(fpW, "In <%d>\n", IR.ADDR);
@@ -69,24 +71,24 @@ void In()
 	scanf("%d", &AC);
 	fprintf(fpW, "Input keyboard: %d\n", AC);
 }
-
+//output AC to screen
 void Out()
 {
 	fprintf(fpW, "Out <%d>\n", IR.ADDR);
 	fprintf(fpW, "result is %d\n", AC);
+	printf("result is %d\n", AC);
 }
-
+//ends the program
 int Halt()
 {
 	return 0;
 }
-
+//jump to PC <ADDR>
 void JMP()
 {
-	printf("jumping to %d * 2", IR.ADDR);
 	PC = IR.ADDR * 2;
 }
-
+//if AC == 0 skip next line
 void SkipZ()
 {
 	if(AC == 0)
@@ -94,7 +96,7 @@ void SkipZ()
 		PC += 2;
 	}
 }
-
+//if AC > 0 skip next line
 void SkipG()
 {
 	if(AC>0)
@@ -102,7 +104,7 @@ void SkipG()
 		PC += 2;
 	}
 }
-
+//if AC < 0 skip next line
 void SkipL()
 {
 	if(AC<0)
@@ -110,7 +112,7 @@ void SkipL()
 		PC += 2;
 	}
 }
-
+//prints the current machines values
 void PrintValues()
 {
 	fprintf(fpW, "\nPC = %d | A = %d | DM = [%d", PC, AC, DM[0]);
@@ -121,7 +123,7 @@ void PrintValues()
 	}
 	fprintf(fpW, "]\n");
 }
-
+//converts the elf to instructions
 void InputIM()
 {
 	printf("Input file name: ");
@@ -164,7 +166,7 @@ void InputIM()
 
 	fprintf(fpW, "Done Compiling \n");
 }
-
+//prints the instruction memory
 void PrintIM()
 {
 
@@ -186,8 +188,9 @@ int main()
 
 	InputIM();
 	PrintIM();
-	int loop = 1;
+
 	//run program
+	int loop = 1;
 	while(loop)
 	{
 		PrintValues();
